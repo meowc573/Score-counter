@@ -1,44 +1,138 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-  <meta charset="UTF-8">
-  <title>หน้าเว็บนับคะแนนเต็มรูปแบบ</title>
+  <meta charset="UTF-8" />
+  <title>ตัวนับคะแนนสวย ๆ</title>
   <style>
-    body { font-family: sans-serif; padding: 20px; background: #f5f5f5; }
-    label, input, button { margin: 10px 0; display: block; }
-    input { padding: 5px; width: 250px; }
-    button { padding: 10px 20px; margin-right: 10px; }
-    .output { margin-top: 20px; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-    .output p { margin: 8px 0; }
+    :root {
+      --primary: #4a90e2;
+      --secondary: #ffffff;
+      --accent: #f5a623;
+      --bg: #f0f2f5;
+      --card-bg: #ffffff;
+      --text: #333333;
+      --text-light: #666666;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: "Segoe UI", Tahoma, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .container {
+      background: var(--card-bg);
+      border-radius: 12px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+      padding: 30px;
+      width: 360px;
+      max-width: 90%;
+    }
+    h1 {
+      text-align: center;
+      color: var(--primary);
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+    .form-group label {
+      display: block;
+      font-size: 0.9rem;
+      margin-bottom: 6px;
+    }
+    .form-group input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 1rem;
+    }
+    .form-group input:focus {
+      border-color: var(--primary);
+      outline: none;
+    }
+
+    .buttons {
+      display: flex;
+      justify-content: space-between;
+    }
+    .buttons button {
+      flex: 1;
+      margin: 0 5px;
+      padding: 12px 0;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      color: var(--secondary);
+      background: var(--primary);
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .buttons button:hover {
+      background: var(--accent);
+    }
+
+    .output {
+      margin-top: 25px;
+      background: #fafafa;
+      padding: 20px;
+      border-radius: 8px;
+      border: 1px solid #e0e0e0;
+    }
+    .output p {
+      margin: 10px 0;
+      font-size: 1rem;
+    }
+    .output span {
+      font-weight: bold;
+    }
+    .hint {
+      font-size: 0.8rem;
+      color: var(--text-light);
+    }
   </style>
 </head>
 <body>
-  <h2>เว็บนับคะแนน — ฟีเจอร์ครบ</h2>
+  <div class="container">
+    <h1>ตัวนับคะแนน</h1>
 
-  <label>คะแนนต่อวินาที:
-    <input type="number" id="scoreRate" value="1" step="0.01" />
-  </label>
+    <div class="form-group">
+      <label for="scoreRate">คะแนนต่อวินาที</label>
+      <input type="number" id="scoreRate" value="1" step="0.01" />
+    </div>
+    <div class="form-group">
+      <label for="targetScore">คะแนนเป้าหมาย (ถ้ามี)</label>
+      <input type="number" id="targetScore" placeholder="เช่น 1000" />
+    </div>
+    <div class="form-group">
+      <label for="endTime">เวลาเป้าหมาย (ถ้ามี)</label>
+      <input type="datetime-local" id="endTime" />
+      <div class="hint">ถ้าใส่ ระบบจะแสดงเวลาที่เหลือ</div>
+    </div>
 
-  <label>คะแนนเป้าหมาย (ถ้าใส่):
-    <input type="number" id="targetScore" placeholder="ใส่คะแนนที่ต้องการให้ถึง" />
-  </label>
+    <div class="buttons">
+      <button onclick="startCounting()">เริ่ม</button>
+      <button onclick="pauseCounting()">พัก</button>
+      <button onclick="resetAll()">รีเซต</button>
+    </div>
 
-  <label>เวลาสิ้นสุด (ถ้าใส่ — เพื่อแสดงเวลาที่เหลือ):
-    <input type="datetime-local" id="endTime" />
-  </label>
-
-  <div>
-    <button onclick="startCounting()">▶ เริ่ม</button>
-    <button onclick="pauseCounting()">⏸ พัก</button>
-    <button onclick="resetAll()">🔄 รีเซต</button>
-  </div>
-
-  <div class="output">
-    <p>คะแนนปัจจุบัน: <span id="score">0.00</span></p>
-    <p>เวลาใช้ไป (วินาที): <span id="elapsedTime">0</span></p>
-    <p>เวลาที่ผ่านไป: <span id="timePassed">-</span></p>
-    <p>เวลาที่เหลือ: <span id="timeRemaining">-</span></p>
-    <p>เวลาที่ต้องใช้ถึงคะแนนเป้าหมาย: <span id="timeToTarget">-</span></p>
+    <div class="output">
+      <p>คะแนนปัจจุบัน: <span id="score">0.00</span></p>
+      <p>เวลาใช้ไป (วินาที): <span id="elapsedTime">0</span></p>
+      <p>เวลาที่ผ่านไป: <span id="timePassed">-</span></p>
+      <p>เวลาที่เหลือ: <span id="timeRemaining">-</span></p>
+      <p>เวลาที่ต้องใช้ถึงคะแนนเป้าหมาย: <span id="timeToTarget">-</span></p>
+    </div>
   </div>
 
   <script>
@@ -60,14 +154,10 @@
     }
 
     function startCounting() {
-      if (interval) return;  // ถ้ากำลังนับอยู่แล้ว ก็ไม่เริ่มซ้ำ
+      if (interval) return;
 
-      // อ่านค่า rate
       rate = parseFloat(document.getElementById('scoreRate').value) || 1;
-
-      if (!startTime) {
-        startTime = new Date();
-      }
+      if (!startTime) startTime = new Date();
       if (pauseStart) {
         pausedTime += new Date() - pauseStart;
         pauseStart = null;
@@ -81,10 +171,8 @@
 
         document.getElementById("score").textContent = score.toFixed(2);
         document.getElementById("elapsedTime").textContent = Math.floor(secondsElapsed);
-
         document.getElementById("timePassed").textContent = formatTime(elapsedMs);
 
-        // ถ้ามีเวลาสิ้นสุด => เวลาที่เหลือ
         const endInput = document.getElementById("endTime").value;
         if (endInput) {
           const endTime = new Date(endInput);
@@ -94,16 +182,14 @@
           document.getElementById("timeRemaining").textContent = "-";
         }
 
-        // ถ้ามีคะแนนเป้าหมาย => คำนวณเวลาที่ต้องใช้
         const targetVal = parseFloat(document.getElementById("targetScore").value);
         if (!isNaN(targetVal) && rate > 0) {
-          const neededSeconds = targetVal / rate;
-          const neededMs = neededSeconds * 1000;
+          const neededSec = targetVal / rate;
+          const neededMs = neededSec * 1000;
           document.getElementById("timeToTarget").textContent = formatTime(neededMs);
         } else {
           document.getElementById("timeToTarget").textContent = "-";
         }
-
       }, 1000);
     }
 
