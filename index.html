@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>ตัวนับคะแนนเป้าหมาย</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    :root {
+      --primary: #4a90e2;
+      --accent: #f5a623;
+      --bg: #f0f2f5;
+      --text: #333;
+      --card: #fff;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Tahoma, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      background: var(--card);
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+      max-width: 400px;
+      width: 100%;
+    }
+
+    h1 {
+      text-align: center;
+      color: var(--primary);
+      margin-bottom: 24px;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+
+    .buttons {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    button {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      background: var(--primary);
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    button:hover {
+      background: var(--accent);
+    }
+
+    .output {
+      margin-top: 24px;
+      background: #fafafa;
+      padding: 16px;
+      border-radius: 10px;
+      border: 1px solid #e0e0e0;
+    }
+
+    .output p {
+      margin: 8px 0;
+      font-size: 15px;
+    }
+
+    .output span {
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>ตัวนับคะแนน</h1>
+
+    <div class="form-group">
+      <label>จำนวนคะแนนต่อหน่วยเวลา</label>
+      <input type="number" id="pointsPerUnit" value="10" min="0">
+    </div>
+
+    <div class="form-group">
+      <label>หน่วยเวลา</label>
+      <select id="unit">
+        <option value="seconds">ต่อวินาที</option>
+        <option value="minutes" selected>ต่อนาที</option>
+        <option value="hours">ต่อชั่วโมง</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>คะแนนเป้าหมาย</label>
+      <input type="number" id="targetScore" placeholder="ใส่คะแนนเป้าหมาย (ถ้ามี)">
+    </div>
+
+    <div class="buttons">
+      <button onclick="start()">เริ่ม</button>
+      <button onclick="pause()">พัก</button>
+      <button onclick="reset()">รีเซต</button>
+    </div>
+
+    <div class="output">
+      <p>สถานะ: <span id="status">รอเริ่ม...</span></p>
+      <p>คะแนน: <span id="score">0.00</span></p>
+      <p>เวลาใช้ไป: <span id="elapsed">0</span> วินาที</p>
+      <p>เวลาที่ผ่านไป: <span id="timePassed">-</span></p>
+      <p>เวลาที่เหลือ: <span id="timeRemaining">-</span></p>
+    </div>
+  </div>
+
+  <script>
+    let score = 0;
+    let startTime = null;
+    let pausedTime = 0;
+    let pauseStart = null;
+    let interval = null;
+    let ratePerSecond = 0;
+
+    function formatTime(ms) {
+      if (ms < 0) ms = 0;
+      const sec = Math.floor(ms / 1000);
+      const days = Math.floor(sec / 86400);
+      const hours = Math.floor((sec % 86400) / 3600);
+      const minutes = Math.floor((sec % 3600) / 60);
+      const seconds = sec % 60;
+      return `${days} วัน ${hours} ชม. ${minutes} นาที ${seconds} วิ`;
+    }
+
+    function calculateRate() {
+      const pts = parseFloat(document.getElementById("pointsPerUnit").value) || 0;
+      const unit = document.getElementById("unit").value;
+      if (unit === "seconds") return pts;
+      if (unit === "minutes") return pts / 60;
+      if (unit === "hours") return pts / 3600;
+      return 0;
+    }
+
+    function start() {
+      if (interval) return;
+
+      ratePerSecond = calculateRate();
+      if (!startTime) startTime = new Date();
+      if (pauseStart) {
+        pausedTime += new Date() - pauseStart;
+        pauseStart = null;
+      }
+
+      interval = setInterval(() => {
+        const now = new Date();
+        const elapsed = (now - startTime - pausedTime) / 1000;
+        score = elapsed * ratePerSecond;
+
+        document.getElementById("score").textContent = score.toFixed(2);
+        document.getElementById("elapsed").textContent = Math.floor(elapsed);
+        document.getElementById("timePassed").textContent = formatTime(elapsed * 1000);
+        document.getElementById("status").textContent = "กำลังนับคะแนน...";
+
+        const target = parseFloat(document.getElementById("targetScore").value);
+        if (!isNaN(target) && ratePerSecond > 0) {
+          const remaining = ((target - score) / ratePerSecond) * 1000;
+          document.getElementById("timeRemaining").textContent = formatTime(remaining);
+        } else {
+          document.getElementById("timeRemaining").textContent = "-";
+        }
+      }, 1000);
+    }
+
+    function pause() {
+      if (interval) {
+        clearInterval(interval);
+        interval = null;
+        pauseStart = new Date();
+        document.getElementById("status").textContent = "หยุดชั่วคราว";
+      }
+    }
+
+    function reset() {
+      clearInterval(interval);
+      interval = null;
+      score = 0;
+      startTime = null;
+      pausedTime = 0;
+      pauseStart = null;
+
+      document.getElementById("score").textContent = "0.00";
+      document.getElementById("elapsed").textContent = "0";
+      document.getElementById("timePassed").textContent = "-";
+      document.getElementById("timeRemaining").textContent = "-";
+      document.getElementById("status").textContent = "รอเริ่ม...";
+    }
+  </script>
+</body>
+                  </html>
+                  
