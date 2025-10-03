@@ -108,17 +108,21 @@
     <h1>ตัวนับคะแนน</h1>
 
     <div class="form-group">
-      <label>จำนวนคะแนนต่อหน่วยเวลา</label>
-      <input type="number" id="pointsPerUnit" value="10" min="0">
+      <label>คะแนน</label>
+      <input type="number" id="points" value="100" min="0">
     </div>
 
     <div class="form-group">
-      <label>หน่วยเวลา</label>
-      <select id="unit">
-        <option value="seconds">ต่อวินาที</option>
-        <option value="minutes" selected>ต่อนาที</option>
-        <option value="hours">ต่อชั่วโมง</option>
-      </select>
+      <label>ทุกๆ (จำนวน) หน่วยเวลา</label>
+      <div style="display: flex; gap: 10px;">
+        <input type="number" id="timeAmount" value="10" min="1" style="flex: 1;">
+        <select id="timeUnit" style="flex: 1;">
+          <option value="seconds">วินาที</option>
+          <option value="minutes" selected>นาที</option>
+          <option value="hours">ชั่วโมง</option>
+          <option value="days">วัน</option>
+        </select>
+      </div>
     </div>
 
     <div class="form-group">
@@ -160,12 +164,16 @@
     }
 
     function calculateRate() {
-      const pts = parseFloat(document.getElementById("pointsPerUnit").value) || 0;
-      const unit = document.getElementById("unit").value;
-      if (unit === "seconds") return pts;
-      if (unit === "minutes") return pts / 60;
-      if (unit === "hours") return pts / 3600;
-      return 0;
+      const points = parseFloat(document.getElementById("points").value) || 0;
+      const timeAmount = parseFloat(document.getElementById("timeAmount").value) || 1;
+      const unit = document.getElementById("timeUnit").value;
+
+      let seconds = timeAmount;
+      if (unit === "minutes") seconds *= 60;
+      else if (unit === "hours") seconds *= 3600;
+      else if (unit === "days") seconds *= 86400;
+
+      return points / seconds;
     }
 
     function start() {
@@ -223,5 +231,4 @@
     }
   </script>
 </body>
-                  </html>
-                  
+</html>
