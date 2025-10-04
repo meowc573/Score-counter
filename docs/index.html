@@ -76,7 +76,6 @@
   </div>
 
 <script>
-  // ฟอร์แมตเวลา
   function formatTime(ms) {
     if (ms < 0) ms = 0;
     const sec = Math.floor(ms / 1000);
@@ -87,7 +86,6 @@
     return `${days} วัน ${hours} ชม. ${minutes} นาที ${seconds} วิ`;
   }
 
-  // คำนวณ rate คะแนนต่อวินาที
   function calculateRate() {
     const points = parseFloat(document.getElementById("points").value) || 0;
     const timeAmount = parseFloat(document.getElementById("timeAmount").value) || 1;
@@ -101,12 +99,10 @@
     return points / seconds;
   }
 
-  // เก็บสถานะลง localStorage
   function saveState(state) {
     localStorage.setItem("counterState", JSON.stringify(state));
   }
 
-  // โหลดสถานะจาก localStorage
   function loadState() {
     const data = localStorage.getItem("counterState");
     if (data) {
@@ -119,12 +115,10 @@
     return null;
   }
 
-  // ลบสถานะใน localStorage
   function clearState() {
     localStorage.removeItem("counterState");
   }
 
-  // ตัวแปรสถานะ
   let score = 0;
   let startTime = null;
   let pausedTime = 0;
@@ -133,15 +127,18 @@
   let ratePerSecond = 0;
   let isRunning = false;
 
-  // อัพเดตคะแนนและเวลาทุกวินาที
   function update() {
     if (!isRunning) return;
 
     const now = new Date();
-    const elapsed = (now - startTime - pausedTime) / 1000; // วินาที
+    const elapsed = (now - startTime - pausedTime) / 1000;
     score = elapsed * ratePerSecond;
 
+    // เวลาที่ใช้ทั้งหมด (คำนวณจากคะแนน)
+    const elapsedCalc = score / ratePerSecond;
+
     document.getElementById("score").textContent = score.toFixed(2);
+    document.getElementById("elapsed").textContent = Math.floor(elapsedCalc);
 
     const target = parseFloat(document.getElementById("targetScore").value);
     if (!isNaN(target) && ratePerSecond > 0) {
@@ -155,7 +152,6 @@
         isRunning = false;
         document.getElementById("status").textContent = "ถึงเป้าหมายแล้ว!";
         document.getElementById("timeRemaining").textContent = "0 วินาที";
-        clearState();
         return;
       }
     } else {
@@ -163,10 +159,8 @@
       document.getElementById("timePassed").textContent = formatTime(elapsed * 1000);
     }
 
-    document.getElementById("elapsed").textContent = Math.floor(elapsed);
     document.getElementById("status").textContent = "กำลังนับคะแนน...";
 
-    // บันทึกสถานะ
     saveState({
       startTime: startTime.getTime(),
       pausedTime,
@@ -181,7 +175,6 @@
     });
   }
 
-  // เริ่มการนับคะแนน
   function start() {
     if (isRunning) return;
 
@@ -207,7 +200,6 @@
     update();
   }
 
-  // หยุดชั่วคราว
   function pause() {
     if (!isRunning) return;
 
@@ -231,7 +223,6 @@
     });
   }
 
-  // รีเซตทั้งหมด
   function reset() {
     clearInterval(interval);
     interval = null;
@@ -250,17 +241,15 @@
     clearState();
   }
 
-  // โหลดสถานะตอนโหลดหน้าเว็บ
   window.addEventListener("load", () => {
     const saved = loadState();
     if (saved) {
-      // เติมค่าลง input
       document.getElementById("points").value = saved.points || 100;
       document.getElementById("timeAmount").value = saved.timeAmount || 10;
       document.getElementById("timeUnit").value = saved.timeUnit || "minutes";
       document.getElementById("targetScore").value = saved.targetScore || "";
 
-      startTime = new Date(saved.startTime);
+      startTime = saved.startTime ? new Date(saved.startTime) : null;
       pausedTime = saved.pausedTime || 0;
       pauseStart = saved.pauseStart ? new Date(saved.pauseStart) : null;
       ratePerSecond = saved.ratePerSecond || calculateRate();
@@ -270,17 +259,16 @@
       document.getElementById("score").textContent = score.toFixed(2);
 
       if (isRunning) {
-        // กำลังนับต่อ
         interval = setInterval(update, 1000);
         update();
       } else if (pauseStart) {
         document.getElementById("status").textContent = "หยุดชั่วคราว";
-        document.getElementById("timePassed").textContent = formatTime((new Date() - startTime - pausedTime) || 0);
       } else {
         document.getElementById("status").textContent = "รอเริ่ม...";
       }
     }
   });
 </script>
+
 </body>
 </html>
