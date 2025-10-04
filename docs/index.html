@@ -42,9 +42,6 @@
       box-sizing: border-box;
       outline: none;
       transition: box-shadow 0.3s ease, background 0.3s ease;
-    }
-
-    input, select {
       background: rgba(255 255 255 / 0.15);
       color: #fff;
       font-weight: 600;
@@ -77,12 +74,11 @@
     }
 
     .output {
-      background: linear-gradient(135deg, #2b2f4a, #3e4666);
+      background: rgba(255 255 255 / 0.15);
       padding: 22px 24px;
       border-radius: 18px;
       margin-top: 32px;
-      box-shadow: inset 0 0 12px #1b1f35;
-      color: #c8d0f5;
+      box-shadow: inset 0 0 14px rgba(255 255 255 / 0.2);
     }
 
     .output p {
@@ -103,7 +99,7 @@
       color: #ffeaa7cc;
     }
 
-    #elapsed, #timeRemaining, #nowTime2, #chosenTime2 {
+    #elapsed, #totalUsedTime, #timeRemaining, #nowTime2, #chosenTime2 {
       font-weight: 700;
     }
 
@@ -131,18 +127,43 @@
       border-radius: 20px;
       box-shadow: 0 10px 30px rgba(255 216 96 / 0.3);
     }
+
+    /* Language selector */
+    #langSelect {
+      width: 120px;
+      font-size: 18px;
+      font-weight: 700;
+      padding: 8px 12px;
+      margin-bottom: 20px;
+      cursor: pointer;
+      border-radius: 12px;
+      border: none;
+      background: rgba(255 255 255 / 0.15);
+      color: #fff;
+      outline: none;
+      transition: box-shadow 0.3s ease, background 0.3s ease;
+    }
+    #langSelect:hover {
+      background: rgba(255 255 255 / 0.3);
+      box-shadow: 0 0 12px 3px #ffd860cc;
+    }
   </style>
 </head>
 <body>
 
-  <h1>เครื่องคำนวณเวลาจากคะแนน</h1>
+  <select id="langSelect" title="เลือกภาษา / Select Language">
+    <option value="th">🇹🇭 ไทย</option>
+    <option value="en">🇺🇸 English</option>
+  </select>
 
-  <label>คะแนน (Points)</label>
-  <input type="number" id="points" min="0" />
+  <h1 id="title">เครื่องคำนวณเวลาจากคะแนน</h1>
 
-  <label>ทุกๆ (จำนวน) หน่วยเวลา</label>
+  <label id="labelPoints">คะแนน (Points)</label>
+  <input type="number" id="points" min="0" placeholder="ใส่คะแนนที่ได้ทุกหน่วยเวลา" />
+
+  <label id="labelTimeAmount">ทุกๆ (จำนวน) หน่วยเวลา</label>
   <div class="time-row">
-    <input type="number" id="timeAmount" min="1" />
+    <input type="number" id="timeAmount" min="1" placeholder="จำนวนหน่วยเวลา เช่น 1" />
     <select id="timeUnit">
       <option value="seconds">วินาที</option>
       <option value="minutes" selected>นาที</option>
@@ -151,33 +172,34 @@
     </select>
   </div>
 
-  <label>คะแนนเป้าหมาย (ถ้ามี)</label>
+  <label id="labelTargetScore">คะแนนเป้าหมาย (ถ้ามี)</label>
   <input type="number" id="targetScore" placeholder="ใส่คะแนนเป้าหมาย (ถ้ามี)" />
 
   <div style="display:flex; gap:14px; margin-top:24px;">
-    <button onclick="start()">เริ่ม</button>
-    <button onclick="pause()">พัก</button>
-    <button onclick="reset()">รีเซต</button>
+    <button id="btnStart">เริ่ม</button>
+    <button id="btnPause">พัก</button>
+    <button id="btnReset">รีเซต</button>
   </div>
 
   <div class="output">
-    <p>สถานะ: <span id="status">รอเริ่ม...</span></p>
-    <p>คะแนน: <span id="score">0</span></p>
-    <p>เวลาที่ใช้ทั้งหมด: <span id="elapsed">-</span></p>
-    <p>เวลาที่เหลือ: <span id="timeRemaining">-</span></p>
+    <p><span id="labelStatusText">สถานะ:</span> <span id="status">รอเริ่ม...</span></p>
+    <p><span id="labelScoreText">คะแนน:</span> <span id="score">0</span></p>
+    <p><span id="labelElapsedText">เวลาที่ผ่านไป:</span> <span id="elapsed">-</span></p>
+    <p><span id="labelTotalUsedTimeText">เวลาที่ใช้ทั้งหมด:</span> <span id="totalUsedTime">-</span></p>
+    <p><span id="labelTimeRemainingText">เวลาที่เหลือ:</span> <span id="timeRemaining">-</span></p>
   </div>
 
   <hr />
 
   <div id="calculator2">
-    <h1>เครื่องคำนวณคะแนนจากเวลา</h1>
+    <h1 id="title2">เครื่องคำนวณคะแนนจากเวลา</h1>
 
-    <label>คะแนน</label>
-    <input type="number" id="points2" min="0" />
+    <label id="labelPoints2">คะแนน</label>
+    <input type="number" id="points2" min="0" placeholder="ใส่คะแนนที่ได้ทุกหน่วยเวลา" />
 
-    <label>ทุกๆ (จำนวน) หน่วยเวลา</label>
+    <label id="labelTimeAmount2">ทุกๆ (จำนวน) หน่วยเวลา</label>
     <div class="time-row">
-      <input type="number" id="timeAmount2" min="1" />
+      <input type="number" id="timeAmount2" min="1" placeholder="จำนวนหน่วยเวลา เช่น 1" />
       <select id="timeUnit2">
         <option value="seconds">วินาที</option>
         <option value="minutes" selected>นาที</option>
@@ -186,212 +208,401 @@
       </select>
     </div>
 
-    <label>เวลาสิ้นสุด (เช่น เวลาเป้าหมาย)</label>
+    <label id="labelEndTime2">เวลาสิ้นสุด (เช่น เวลาเป้าหมาย)</label>
     <input type="datetime-local" id="endTime2" />
 
-    <button onclick="calculateScoreFromTime()">คำนวณคะแนน</button>
+    <button id="btnCalcScore">คำนวณคะแนน</button>
 
     <div class="output">
-      <p>เวลาปัจจุบัน: <span id="nowTime2">-</span></p>
-      <p>เวลาที่เลือก: <span id="chosenTime2">-</span></p>
-      <p>คะแนน: <span id="calculatedScore2">-</span></p>
-      <!-- ลบเวลาที่ผ่านไปออก -->
+      <p><span id="labelNowTime2Text">เวลาปัจจุบัน:</span> <span id="nowTime2">-</span></p>
+      <p><span id="labelChosenTime2Text">เวลาที่เลือก:</span> <span id="chosenTime2">-</span></p>
+      <p><span id="labelCalculatedScore2Text">คะแนน:</span> <span id="calculatedScore2">-</span></p>
     </div>
   </div>
 
 <script>
-  // ฟังก์ชันจัดการ Local Storage สำหรับฟิลด์ input, select
-  function saveToStorage(id) {
-    const elem = document.getElementById(id);
-    if (!elem) return;
-    elem.addEventListener('input', () => {
-      localStorage.setItem(id, elem.value);
-    });
-    if (elem.tagName === "SELECT") {
-      elem.addEventListener('change', () => {
-        localStorage.setItem(id, elem.value);
-      });
+  // ข้อความแปล
+  const texts = {
+    th: {
+      title: "เครื่องคำนวณเวลาจากคะแนน",
+      labelPoints: "คะแนน (Points)",
+      labelTimeAmount: "ทุกๆ (จำนวน) หน่วยเวลา",
+      labelTargetScore: "คะแนนเป้าหมาย (ถ้ามี)",
+      btnStart: "เริ่ม",
+      btnPause: "พัก",
+      btnReset: "รีเซต",
+      statusWaiting: "รอเริ่ม...",
+      labelStatusText: "สถานะ:",
+      labelScoreText: "คะแนน:",
+      labelElapsedText: "เวลาที่ผ่านไป:",
+      labelTotalUsedTimeText: "เวลาที่ใช้ทั้งหมด:",
+      labelTimeRemainingText: "เวลาที่เหลือ:",
+      timeUnitsFull: {
+        seconds: "วินาที",
+        minutes: "นาที",
+        hours: "ชั่วโมง",
+        days: "วัน"
+      },
+      placeholderPoints: "ใส่คะแนนที่ได้ทุกหน่วยเวลา",
+      placeholderTimeAmount: "จำนวนหน่วยเวลา เช่น 1",
+      placeholderTargetScore: "ใส่คะแนนเป้าหมาย (ถ้ามี)",
+
+      title2: "เครื่องคำนวณคะแนนจากเวลา",
+      labelPoints2: "คะแนน",
+      labelTimeAmount2: "ทุกๆ (จำนวน) หน่วยเวลา",
+      labelEndTime2: "เวลาสิ้นสุด (เช่น เวลาเป้าหมาย)",
+      btnCalcScore: "คำนวณคะแนน",
+      labelNowTime2Text: "เวลาปัจจุบัน:",
+      labelChosenTime2Text: "เวลาที่เลือก:",
+      labelCalculatedScore2Text: "คะแนน:",
+      labelDurationText2Text: "ระยะเวลา:",
+      placeholderPoints2: "ใส่คะแนนที่ได้ทุกหน่วยเวลา",
+      placeholderTimeAmount2: "จำนวนหน่วยเวลา เช่น 1"
+    },
+    en: {
+      title: "Score & Time Calculator",
+      labelPoints: "Points",
+      labelTimeAmount: "Every (amount) time unit",
+      labelTargetScore: "Target score (optional)",
+      btnStart: "Start",
+      btnPause: "Pause",
+      btnReset: "Reset",
+      statusWaiting: "Waiting to start...",
+      labelStatusText: "Status:",
+      labelScoreText: "Score:",
+      labelElapsedText: "Elapsed time:",
+      labelTotalUsedTimeText: "Total used time:",
+      labelTimeRemainingText: "Time remaining:",
+      timeUnitsFull: {
+        seconds: "Seconds",
+        minutes: "Minutes",
+        hours: "Hours",
+        days: "Days"
+      },
+      placeholderPoints: "Enter points earned per time unit",
+      placeholderTimeAmount: "Amount of time units, e.g. 1",
+      placeholderTargetScore: "Enter target score (optional)",
+
+      title2: "Score Calculator from Time",
+      labelPoints2: "Points",
+      labelTimeAmount2: "Every (amount) time unit",
+      labelEndTime2: "End time (target time)",
+      btnCalcScore: "Calculate Score",
+      labelNowTime2Text: "Current time:",
+      labelChosenTime2Text: "Chosen time:",
+      labelCalculatedScore2Text: "Score:",
+      labelDurationText2Text: "Duration:",
+      placeholderPoints2: "Enter points earned per time unit",
+      placeholderTimeAmount2: "Amount of time units, e.g. 1"
     }
-  }
+  };
 
-  // โหลดค่าใส่ฟิลด์จาก LocalStorage (ถ้ามี)
-  function loadFromStorage(id, defaultValue = '') {
-    const val = localStorage.getItem(id);
-    const elem = document.getElementById(id);
-    if (elem) {
-      elem.value = val !== null ? val : defaultValue;
-    }
-  }
-
-  // โหลดค่าทั้งหมดจาก LocalStorage
-  function loadAll() {
-    loadFromStorage("points", "100");
-    loadFromStorage("timeAmount", "10");
-    loadFromStorage("timeUnit", "minutes");
-    loadFromStorage("targetScore", "");
-
-    loadFromStorage("points2", "100");
-    loadFromStorage("timeAmount2", "10");
-    loadFromStorage("timeUnit2", "minutes");
-    loadFromStorage("endTime2", "");
-  }
-
-  // เซ็ต event listener ทุกตัวที่ต้องการเก็บค่าลง Storage
-  function setupSave() {
-    ["points", "timeAmount", "timeUnit", "targetScore",
-     "points2", "timeAmount2", "timeUnit2", "endTime2"].forEach(id => saveToStorage(id));
-  }
-
-  // ฟังก์ชันแปลงเวลาเป็น ms จากหน่วยและจำนวน
-  function toMilliseconds(amount, unit) {
-    let ms = amount;
-    if (unit === "seconds") ms *= 1000;
-    else if (unit === "minutes") ms *= 60 * 1000;
-    else if (unit === "hours") ms *= 3600 * 1000;
-    else if (unit === "days") ms *= 86400 * 1000;
-    return ms;
-  }
-
-  // ฟังก์ชันแสดงเวลาแบบอ่านง่าย
-  function formatTime(ms) {
-    if (ms < 0) ms = 0;
-    const sec = Math.floor(ms / 1000);
-    const days = Math.floor(sec / 86400);
-    const hours = Math.floor((sec % 86400) / 3600);
-    const minutes = Math.floor((sec % 3600) / 60);
-    const seconds = sec % 60;
-    return `${days} วัน ${hours} ชม. ${minutes} นาที ${seconds} วิ`;
-  }
-
-  // ฟังก์ชันแสดงคะแนนแบบเลขทศนิยม 2 ตำแหน่ง ถ้ามี
-  function formatScore(score) {
-    return Number.isInteger(score) ? score.toString() : score.toFixed(2);
-  }
-
-  // ตัวแปรเก็บสถานะการนับคะแนน
-  let score = 0;
-  let startTime = null;
-  let pausedTime = 0;
-  let pauseStart = null;
-  let interval = null;
-  let isRunning = false;
-
-  // อัปเดตคะแนนและเวลาที่ใช้
-  function update() {
-    if (!isRunning) return;
-
-    const now = new Date();
-    let elapsedMs = now - startTime - pausedTime;
-    if (elapsedMs < 0) elapsedMs = 0;
-
-    const points = parseFloat(document.getElementById("points").value) || 0;
-    const timeAmount = parseFloat(document.getElementById("timeAmount").value) || 1;
-    const unit = document.getElementById("timeUnit").value;
-    const target = parseFloat(document.getElementById("targetScore").value);
-
-    const unitMs = toMilliseconds(timeAmount, unit);
-
-    const unitsPassed = Math.floor(elapsedMs / unitMs);
-    score = unitsPassed * points;
-
-    document.getElementById("score").textContent = formatScore(score);
-    document.getElementById("elapsed").textContent = formatTime(elapsedMs);
-
-    if (!isNaN(target) && target > 0 && points > 0) {
-      const totalTimeMs = unitMs * (target / points);
-      const remainingMs = totalTimeMs - elapsedMs;
-
-      document.getElementById("timeRemaining").textContent = remainingMs > 0 ? formatTime(remainingMs) : "ถึงเป้าหมายแล้ว";
-      if (remainingMs <= 0) {
-        document.getElementById("status").textContent = "ถึงเป้าหมายคะแนนแล้ว 🎉";
-        clearInterval(interval);
-        isRunning = false;
-        return;
-      } else {
-        document.getElementById("status").textContent = "กำลังนับคะแนน...";
-      }
+  // ตรวจจับภาษาของเบราว์เซอร์ และตั้งค่าเริ่มต้น
+  function detectBrowserLanguage() {
+    const lang = navigator.language || navigator.userLanguage || "en";
+    if (lang.toLowerCase().startsWith("th")) {
+      return "th";
+    } else if (lang.toLowerCase().startsWith("en")) {
+      return "en";
     } else {
-      document.getElementById("timeRemaining").textContent = "-";
-      document.getElementById("status").textContent = "กำลังนับคะแนน...";
+      return "en"; // ดีฟอลต์
     }
   }
 
-  function start() {
-    if (isRunning) return;
-    if (!startTime) startTime = new Date();
-    if (pauseStart) {
-      pausedTime += new Date() - pauseStart;
-      pauseStart = null;
+  // ตั้งค่าภาษาและแปลข้อความทั้งหมด
+  function setLanguage(lang) {
+    document.documentElement.lang = lang;
+    document.getElementById("langSelect").value = lang;
+
+    const t = texts[lang];
+
+    document.getElementById("title").textContent = t.title;
+    document.getElementById("labelPoints").textContent = t.labelPoints;
+    document.getElementById("labelTimeAmount").textContent = t.labelTimeAmount;
+    document.getElementById("labelTargetScore").textContent = t.labelTargetScore;
+    document.getElementById("btnStart").textContent = t.btnStart;
+    document.getElementById("btnPause").textContent = t.btnPause;
+    document.getElementById("btnReset").textContent = t.btnReset;
+    document.getElementById("status").textContent = t.statusWaiting;
+    document.getElementById("labelStatusText").textContent = t.labelStatusText;
+    document.getElementById("labelScoreText").textContent = t.labelScoreText;
+    document.getElementById("labelElapsedText").textContent = t.labelElapsedText;
+    document.getElementById("labelTotalUsedTimeText").textContent = t.labelTotalUsedTimeText;
+    document.getElementById("labelTimeRemainingText").textContent = t.labelTimeRemainingText;
+
+    // แปล select options หน่วยเวลา
+    const timeUnitSelect = document.getElementById("timeUnit");
+    for (let opt of timeUnitSelect.options) {
+      opt.textContent = t.timeUnitsFull[opt.value];
     }
-    isRunning = true;
-    document.getElementById("status").textContent = "กำลังนับคะแนน...";
-    interval = setInterval(update, 1000);
+
+    // แปลส่วน calculator2
+    document.getElementById("title2").textContent = t.title2;
+    document.getElementById("labelPoints2").textContent = t.labelPoints2;
+    document.getElementById("labelTimeAmount2").textContent = t.labelTimeAmount2;
+    document.getElementById("labelEndTime2").textContent = t.labelEndTime2;
+    document.getElementById("btnCalcScore").textContent = t.btnCalcScore;
+    document.getElementById("labelNowTime2Text").textContent = t.labelNowTime2Text;
+    document.getElementById("labelChosenTime2Text").textContent = t.labelChosenTime2Text;
+    document.getElementById("labelCalculatedScore2Text").textContent = t.labelCalculatedScore2Text;
+
+    const timeUnitSelect2 = document.getElementById("timeUnit2");
+    for (let opt of timeUnitSelect2.options) {
+      opt.textContent = t.timeUnitsFull[opt.value];
+    }
+
+    // placeholder
+    document.getElementById("points").placeholder = t.placeholderPoints;
+    document.getElementById("timeAmount").placeholder = t.placeholderTimeAmount;
+    document.getElementById("targetScore").placeholder = t.placeholderTargetScore;
+    document.getElementById("points2").placeholder = t.placeholderPoints2;
+    document.getElementById("timeAmount2").placeholder = t.placeholderTimeAmount2;
   }
 
-  function pause() {
-    if (!isRunning) return;
-    isRunning = false;
-    pauseStart = new Date();
-    clearInterval(interval);
-    document.getElementById("status").textContent = "หยุดพัก...";
+  // แปลงหน่วยเวลาเป็นวินาที
+  function convertToSeconds(amount, unit) {
+    amount = Number(amount);
+    if (isNaN(amount) || amount <= 0) return null;
+    switch (unit) {
+      case "seconds": return amount;
+      case "minutes": return amount * 60;
+      case "hours": return amount * 3600;
+      case "days": return amount * 86400;
+      default: return null;
+    }
   }
 
-  function reset() {
-    isRunning = false;
-    clearInterval(interval);
-    score = 0;
+  // แปลงวินาทีเป็นปี วัน ชั่วโมง นาที วินาที
+  function formatTime(seconds) {
+    if (seconds < 0) seconds = 0;
+    let remaining = seconds;
+    const years = Math.floor(remaining / (365*86400));
+    remaining %= 365*86400;
+    const days = Math.floor(remaining / 86400);
+    remaining %= 86400;
+    const hours = Math.floor(remaining / 3600);
+    remaining %= 3600;
+    const minutes = Math.floor(remaining / 60);
+    remaining %= 60;
+    return { years, days, hours, minutes, seconds: remaining };
+  }
+
+  function formatTimeString(t) {
+    let parts = [];
+    if(t.years) parts.push(`${t.years} ปี`);
+    if(t.days) parts.push(`${t.days} วัน`);
+    if(t.hours) parts.push(`${t.hours} ชม.`);
+    if(t.minutes) parts.push(`${t.minutes} นาที`);
+    if(t.seconds || parts.length===0) parts.push(`${t.seconds} วิ`);
+    return parts.join(' ');
+  }
+
+  // ตัวแปรสถานะ
+  let timerInterval = null;
+  let startTime = null;
+  let elapsedTime = 0;
+  let paused = false;
+  let currentScore = 0;
+
+  // แปลงภาษาอังกฤษเป็นคำไทย (ถ้าภาษาไทยจะไม่แสดง)
+  function langSwitchText(lang, enText, thText) {
+    return lang === "th" ? thText : enText;
+  }
+
+  function resetAll() {
+    elapsedTime = 0;
+    paused = false;
+    currentScore = 0;
     startTime = null;
-    pausedTime = 0;
-    pauseStart = null;
     document.getElementById("score").textContent = "0";
     document.getElementById("elapsed").textContent = "-";
+    document.getElementById("totalUsedTime").textContent = "-";
     document.getElementById("timeRemaining").textContent = "-";
-    document.getElementById("status").textContent = "รอเริ่ม...";
+    document.getElementById("status").textContent = texts[currentLang].statusWaiting;
+    clearInterval(timerInterval);
+    timerInterval = null;
   }
 
-  // ฟังก์ชันคำนวณคะแนนจากเวลาที่เลือก (หน้าต่าง 2) แบบเรียลไทม์ด้วย
-  function updateCalculator2() {
-    const points2 = parseFloat(document.getElementById("points2").value) || 0;
-    const timeAmount2 = parseFloat(document.getElementById("timeAmount2").value) || 1;
+  // แปลงเวลาให้เป็นสตริงภาษาอังกฤษและไทย (ยืดหยุ่น)
+  function getTimeStringObj(seconds, lang) {
+    let t = formatTime(seconds);
+    if (lang === "en") {
+      let parts = [];
+      if(t.years) parts.push(`${t.years} year${t.years>1?'s':''}`);
+      if(t.days) parts.push(`${t.days} day${t.days>1?'s':''}`);
+      if(t.hours) parts.push(`${t.hours} hour${t.hours>1?'s':''}`);
+      if(t.minutes) parts.push(`${t.minutes} minute${t.minutes>1?'s':''}`);
+      if(t.seconds || parts.length===0) parts.push(`${t.seconds} second${t.seconds!==1?'s':''}`);
+      return parts.join(' ');
+    } else {
+      return formatTimeString(t);
+    }
+  }
+
+  // อัปเดตสถานะและผลลัพธ์หน้าจอ
+  function updateDisplay() {
+    const t = texts[currentLang];
+    // คำนวณเวลาผ่านไป
+    if (!startTime) return;
+    if (!paused) elapsedTime = Math.floor((Date.now() - startTime) / 1000);
+
+    // เวลาใช้ต่อหน่วยเป็นวินาที
+    const pointsPerInterval = Number(document.getElementById("points").value);
+    const timeAmount = Number(document.getElementById("timeAmount").value);
+    const timeUnit = document.getElementById("timeUnit").value;
+    const targetScoreRaw = document.getElementById("targetScore").value;
+    const targetScore = targetScoreRaw ? Number(targetScoreRaw) : null;
+
+    if (!pointsPerInterval || !timeAmount) {
+      document.getElementById("status").textContent = t.statusWaiting;
+      return;
+    }
+    const timeUnitSeconds = convertToSeconds(timeAmount, timeUnit);
+    if (!timeUnitSeconds) {
+      document.getElementById("status").textContent = t.statusWaiting;
+      return;
+    }
+
+    // คำนวณคะแนนที่ควรได้ตามเวลาผ่านไป
+    let score = Math.floor(elapsedTime / timeUnitSeconds) * pointsPerInterval;
+    if (score < 0) score = 0;
+
+    // อัปเดตคะแนนแสดงผล
+    currentScore = score;
+    document.getElementById("score").textContent = score;
+
+    // แสดงเวลาที่ผ่านไปเป็นปี วัน ชั่วโมง นาที วิ
+    document.getElementById("elapsed").textContent = getTimeStringObj(elapsedTime, currentLang);
+
+    // เวลาที่ใช้ทั้งหมด = คะแนนเป้าหมาย / คะแนนต่อหน่วย * เวลาต่อหน่วย
+    let totalUsedSeconds;
+    if (targetScore) {
+      totalUsedSeconds = Math.ceil(targetScore / pointsPerInterval) * timeUnitSeconds;
+      document.getElementById("totalUsedTime").textContent = getTimeStringObj(totalUsedSeconds, currentLang);
+      // เวลาที่เหลือ
+      let remaining = totalUsedSeconds - elapsedTime;
+      if (remaining < 0) remaining = 0;
+      document.getElementById("timeRemaining").textContent = getTimeStringObj(remaining, currentLang);
+    } else {
+      document.getElementById("totalUsedTime").textContent = "-";
+      document.getElementById("timeRemaining").textContent = "-";
+    }
+
+    // สถานะ
+    if (targetScore && score >= targetScore) {
+      document.getElementById("status").textContent = langSwitchText(currentLang, "Target reached!", "ถึงเป้าหมายแล้ว!");
+      clearInterval(timerInterval);
+      timerInterval = null;
+    } else {
+      document.getElementById("status").textContent = langSwitchText(currentLang, "Running...", "กำลังทำงาน...");
+    }
+  }
+
+  // เริ่มจับเวลา
+  function startTimer() {
+    if (timerInterval) return; // ถ้าเริ่มแล้วไม่ต้องเริ่มซ้ำ
+    if (!startTime) {
+      startTime = Date.now() - elapsedTime * 1000;
+    }
+    paused = false;
+    timerInterval = setInterval(updateDisplay, 1000);
+  }
+
+  // หยุดจับเวลา (พัก)
+  function pauseTimer() {
+    if (timerInterval) {
+      clearInterval(timerInterval);
+      timerInterval = null;
+      paused = true;
+      document.getElementById("status").textContent = langSwitchText(currentLang, "Paused", "พักอยู่");
+    }
+  }
+
+  // รีเซตพร้อมยืนยัน
+  function resetTimer() {
+    const confirmMsg = currentLang === "th" ? "คุณต้องการรีเซตหรือไม่? ข้อมูลจะหายหมด!" : "Are you sure you want to reset? All data will be lost!";
+    if (confirm(confirmMsg)) {
+      resetAll();
+    }
+  }
+
+  // -------- Calculator 2 ---------
+  function calculateScore2() {
+    const points2 = Number(document.getElementById("points2").value);
+    const timeAmount2 = Number(document.getElementById("timeAmount2").value);
     const timeUnit2 = document.getElementById("timeUnit2").value;
-    const endTimeStr = document.getElementById("endTime2").value;
+    const endTime2Str = document.getElementById("endTime2").value;
+
+    if (!points2 || !timeAmount2 || !endTime2Str) {
+      alert(currentLang === "th" ? "กรุณากรอกข้อมูลให้ครบทุกช่องในส่วนนี้" : "Please fill all fields in this section");
+      return;
+    }
+
+    const endTime2 = new Date(endTime2Str);
+    if (isNaN(endTime2.getTime())) {
+      alert(currentLang === "th" ? "เวลาไม่ถูกต้อง" : "Invalid time");
+      return;
+    }
 
     const now = new Date();
-    document.getElementById("nowTime2").textContent = now.toLocaleString('th-TH');
-
-    if (!endTimeStr) {
-      document.getElementById("chosenTime2").textContent = "-";
-      document.getElementById("calculatedScore2").textContent = "-";
+    if (endTime2 <= now) {
+      alert(currentLang === "th" ? "เวลาสิ้นสุดต้องมากกว่าเวลาปัจจุบัน" : "End time must be after current time");
       return;
     }
 
-    const endTime = new Date(endTimeStr);
-    document.getElementById("chosenTime2").textContent = endTime.toLocaleString('th-TH');
+    // แสดงเวลาปัจจุบันและเวลาที่เลือก
+    document.getElementById("nowTime2").textContent = now.toLocaleString(currentLang === "th" ? "th-TH" : "en-US");
+    document.getElementById("chosenTime2").textContent = endTime2.toLocaleString(currentLang === "th" ? "th-TH" : "en-US");
 
-    const unitMs = toMilliseconds(timeAmount2, timeUnit2);
+    // คำนวณระยะเวลา (วินาที)
+    const durationSeconds = Math.floor((endTime2.getTime() - now.getTime()) / 1000);
 
-    const diffMs = endTime - now;
-    if (diffMs < 0) {
-      document.getElementById("calculatedScore2").textContent = "เวลาที่เลือกต้องมากกว่าเวลาปัจจุบัน";
+    // แปลงเวลาต่อหน่วยเป็นวินาที
+    const timeUnitSeconds2 = convertToSeconds(timeAmount2, timeUnit2);
+    if (!timeUnitSeconds2) {
+      alert(currentLang === "th" ? "หน่วยเวลาหรือจำนวนเวลาไม่ถูกต้อง" : "Invalid time unit or amount");
       return;
     }
 
-    const scoreCalc = (diffMs / unitMs) * points2;
+    // คำนวณคะแนนตามระยะเวลา
+    const score2 = Math.floor(durationSeconds / timeUnitSeconds2) * points2;
 
-    document.getElementById("calculatedScore2").textContent = formatScore(scoreCalc);
+    // แสดงคะแนน
+    document.getElementById("calculatedScore2").textContent = score2;
+
   }
 
-  function calculateScoreFromTime() {
-    updateCalculator2();
-  }
+  // ----- Language & event listeners -----
+  let currentLang = "th";
 
-  // เรียกใช้ตอนโหลดหน้าครั้งแรก
-  loadAll();
-  setupSave();
+  window.addEventListener("DOMContentLoaded", () => {
+    // ตรวจจับภาษาเบราว์เซอร์
+    currentLang = detectBrowserLanguage();
+    setLanguage(currentLang);
 
-  // อัปเดตค่าแบบเรียลไทม์ในหน้าต่าง 2
-  setInterval(updateCalculator2, 1000);
+    // ตั้งค่า event
+    document.getElementById("btnStart").addEventListener("click", () => {
+      startTimer();
+    });
+
+    document.getElementById("btnPause").addEventListener("click", () => {
+      pauseTimer();
+    });
+
+    document.getElementById("btnReset").addEventListener("click", () => {
+      resetTimer();
+    });
+
+    document.getElementById("langSelect").addEventListener("change", (e) => {
+      currentLang = e.target.value;
+      setLanguage(currentLang);
+      resetAll();
+    });
+
+    document.getElementById("btnCalcScore").addEventListener("click", () => {
+      calculateScore2();
+    });
+  });
 </script>
-
 </body>
 </html>
