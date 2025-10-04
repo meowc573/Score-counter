@@ -2,41 +2,98 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8" />
-  <title>ตัวนับคะแนน</title>
+  <title>ตัวนับคะแนนสวยๆ</title>
   <style>
+    /* ธีมสีพื้นหลัง + style */
     body {
-      font-family: "Segoe UI", Tahoma, sans-serif;
-      padding: 20px;
-      max-width: 400px;
-      margin: auto;
-      background: #f0f2f5;
-      color: #333;
+      font-family: 'Sarabun', 'Segoe UI', Tahoma, sans-serif;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: #f5f5f5;
+      padding: 30px;
+      max-width: 450px;
+      margin: 40px auto;
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 24px;
+      font-weight: 700;
+      color: #fff;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.4);
+    }
+    label {
+      display: block;
+      margin-top: 20px;
+      font-weight: 600;
+      color: #f0f0f0;
     }
     input, select, button {
       width: 100%;
-      padding: 10px;
+      padding: 12px;
       margin-top: 8px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
+      border-radius: 10px;
+      border: none;
       font-size: 16px;
+      box-sizing: border-box;
+      outline: none;
+      transition: box-shadow 0.3s, background 0.3s;
+    }
+    input, select {
+      background: #ffffffdd;
+      color: #333;
+    }
+    input:focus, select:focus {
+      box-shadow: 0 0 8px 2px #ffde59;
     }
     button {
-      background: #4a90e2;
-      color: white;
-      border: none;
+      background: linear-gradient(90deg, #ff5f6d, #ffc371);
+      color: #fff;
+      font-weight: 700;
+      margin-top: 24px;
       cursor: pointer;
-      margin-top: 16px;
-      transition: background 0.3s;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
     }
     button:hover {
-      background: #f5a623;
+      background: linear-gradient(90deg, #ffc371, #ff5f6d);
+    }
+    button:active {
+      transform: scale(0.98);
     }
     .output {
-      background: #fff;
-      padding: 16px;
-      margin-top: 24px;
-      border-radius: 10px;
-      border: 1px solid #e0e0e0;
+      background: rgba(255,255,255,0.15);
+      padding: 20px;
+      border-radius: 14px;
+      margin-top: 30px;
+      box-shadow: inset 0 0 10px rgba(255,255,255,0.2);
+    }
+    .output p {
+      margin: 10px 0;
+      font-size: 18px;
+    }
+    #score {
+      font-size: 22px;
+      font-weight: 700;
+      color: #ffed6f;
+      text-shadow: 0 0 6px rgba(255,237,111,0.7);
+    }
+    #status {
+      font-style: italic;
+      color: #ffeaa7;
+    }
+    #elapsed, #timePassed, #timeRemaining {
+      font-weight: 600;
+    }
+    /* Flex container for the time-input row */
+    .time-row {
+      display: flex;
+      gap: 12px;
+    }
+    .time-row input {
+      flex: 1;
+    }
+    .time-row select {
+      flex: 1;
     }
   </style>
 </head>
@@ -48,9 +105,9 @@
   <input type="number" id="points" value="100" min="0" />
 
   <label>ทุกๆ (จำนวน) หน่วยเวลา</label>
-  <div style="display:flex; gap:10px;">
-    <input type="number" id="timeAmount" value="10" min="1" style="flex:1" />
-    <select id="timeUnit" style="flex:1">
+  <div class="time-row">
+    <input type="number" id="timeAmount" value="10" min="1" />
+    <select id="timeUnit">
       <option value="seconds">วินาที</option>
       <option value="minutes" selected>นาที</option>
       <option value="hours">ชั่วโมง</option>
@@ -61,7 +118,7 @@
   <label>คะแนนเป้าหมาย (ถ้ามี)</label>
   <input type="number" id="targetScore" placeholder="ใส่คะแนนเป้าหมาย (ถ้ามี)" />
 
-  <div style="display:flex; gap:10px;">
+  <div style="display:flex; gap:12px; margin-top:20px;">
     <button onclick="start()">เริ่ม</button>
     <button onclick="pause()">พัก</button>
     <button onclick="reset()">รีเซต</button>
@@ -103,6 +160,26 @@
     return points / seconds;
   }
 
+  function saveState(state) {
+    localStorage.setItem("counterState", JSON.stringify(state));
+  }
+
+  function loadState() {
+    const data = localStorage.getItem("counterState");
+    if (data) {
+      try {
+        return JSON.parse(data);
+      } catch (e) {
+        return null;
+      }
+    }
+    return null;
+  }
+
+  function clearState() {
+    localStorage.removeItem("counterState");
+  }
+
   let score = 0;
   let startTime = null;
   let pausedTime = 0;
@@ -131,7 +208,6 @@
     const unitsPassed = Math.floor(elapsedMs / 1000 / unitSeconds);
     score = unitsPassed * points;
     document.getElementById("score").textContent = formatScore(score);
-
     document.getElementById("timePassed").textContent = formatTime(elapsedMs);
     document.getElementById("status").textContent = "กำลังนับคะแนน...";
 
@@ -153,6 +229,19 @@
       document.getElementById("elapsed").textContent = "-";
       document.getElementById("timeRemaining").textContent = "-";
     }
+
+    saveState({
+      startTime: startTime.getTime(),
+      pausedTime,
+      pauseStart: pauseStart ? pauseStart.getTime() : null,
+      score,
+      ratePerSecond,
+      isRunning,
+      points: document.getElementById("points").value,
+      timeAmount: document.getElementById("timeAmount").value,
+      timeUnit: document.getElementById("timeUnit").value,
+      targetScore: document.getElementById("targetScore").value
+    });
   }
 
   function start() {
@@ -174,6 +263,7 @@
     else if (unit === "hours") unitSeconds *= 3600;
     else if (unit === "days") unitSeconds *= 86400;
 
+    // เริ่มใหม่
     score = 0;
     document.getElementById("score").textContent = "0";
     document.getElementById("status").textContent = "กำลังนับคะแนน...";
@@ -211,6 +301,18 @@
     pauseStart = new Date();
     isRunning = false;
     document.getElementById("status").textContent = "หยุดชั่วคราว";
+    saveState({
+      startTime: startTime.getTime(),
+      pausedTime,
+      pauseStart: pauseStart.getTime(),
+      score,
+      ratePerSecond,
+      isRunning,
+      points: document.getElementById("points").value,
+      timeAmount: document.getElementById("timeAmount").value,
+      timeUnit: document.getElementById("timeUnit").value,
+      targetScore: document.getElementById("targetScore").value
+    });
   }
 
   function reset() {
@@ -220,12 +322,39 @@
     pausedTime = 0;
     pauseStart = null;
     isRunning = false;
+
     document.getElementById("score").textContent = "0";
     document.getElementById("elapsed").textContent = "-";
     document.getElementById("timePassed").textContent = "-";
     document.getElementById("timeRemaining").textContent = "-";
     document.getElementById("status").textContent = "รอเริ่ม...";
+    clearState();
   }
+
+  window.onload = function() {
+    const state = loadState();
+    if (state) {
+      startTime = new Date(state.startTime);
+      pausedTime = state.pausedTime || 0;
+      pauseStart = state.pauseStart ? new Date(state.pauseStart) : null;
+      score = state.score || 0;
+      ratePerSecond = state.ratePerSecond || 0;
+      isRunning = state.isRunning;
+
+      document.getElementById("points").value = state.points || 100;
+      document.getElementById("timeAmount").value = state.timeAmount || 10;
+      document.getElementById("timeUnit").value = state.timeUnit || "minutes";
+      document.getElementById("targetScore").value = state.targetScore || "";
+
+      document.getElementById("score").textContent = formatScore(score);
+      document.getElementById("status").textContent = isRunning ? "กำลังนับคะแนน..." : "หยุดชั่วคราว";
+
+      if (isRunning) {
+        interval = setInterval(update, 1000);
+        update();
+      }
+    }
+  };
 </script>
 
 </body>
