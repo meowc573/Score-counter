@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>เครื่องคำนวณคะแนนและเวลา</title>
+</head>
+<body>
+  <h1>เครื่องคำนวณเวลาจากคะแนน</h1>
+
+  <label>คะแนน (Points): 
+    <input type="number" id="points">
+  </label>
+  <br>
+
+  <label>ทุกๆ (Interval): 
+    <input type="number" id="interval">
+    <select id="unit">
+      <option value="seconds">วินาที</option>
+      <option value="minutes">นาที</option>
+      <option value="hours">ชั่วโมง</option>
+      <option value="days">วัน</option>
+    </select>
+  </label>
+  <br>
+
+  <label>คะแนนเป้าหมาย: 
+    <input type="number" id="target">
+  </label>
+  <br><br>
+
+  <button id="startBtn">เริ่ม</button>
+  <button id="pauseBtn">พัก</button>
+  <button id="resetBtn">รีเซต</button>
+
+  <p>สถานะ: <span id="status">รอเริ่ม...</span></p>
+  <p>คะแนน: <span id="score">0</span></p>
+  <p>เวลาที่ผ่านไป: <span id="elapsed">0</span> วินาที</p>
+
+  <script>
+  let timer = null;
+  let startTime = null;
+  let pausedTime = 0;
+  let running = false;
+
+  function saveState() {
+    const state = {
+      points: document.getElementById("points").value,
+      interval: document.getElementById("interval").value,
+      unit: document.getElementById("unit").value,
+      target: document.getElementById("target").value,
+      status: document.getElementById("status").innerText,
+      score: document.getElementById("score").innerText,
+      elapsed: document.getElementById("elapsed").innerText,
+      startTime: startTime,
+      pausedTime: pausedTime,
+      running: running
+    };
+    localStorage.setItem("scoreCounterState", JSON.stringify(state));
+  }
+
+  function loadState() {
+    const saved = localStorage.getItem("scoreCounterState");
+    if (!saved) return;
+    const state = JSON.parse(saved);
+
+    document.getElementById("points").value = state.points || "";
+    document.getElementById("interval").value = state.interval || "";
+    document.getElementById("unit").value = state.unit || "seconds";
+    document.getElementById("target").value = state.target || "";
+    document.getElementById("status").innerText = state.status || "รอเริ่ม...";
+    document.getElementById("score").innerText = state.score || "0";
+    document.getElementById("elapsed").innerText = state.elapsed || "0";
+
+    startTime = state.startTime;
+    pausedTime = state.pausedTime || 0;
+    running = state.running || false;
+
+    if (running) {
+      startTimer(); // resume ต่อเนื่อง
+    }
+  }
+
+  function updateElapsed() {
+    if (!startTime) return;
+    const now = Date.now();
+    const elapsedSec = Math.floor((now - startTime) / 1000) + pausedTime;
+    document.getElementById("elapsed").innerText = elapsedSec;
+
+    const pts = parseInt(document.getElementById("points").value || "0", 10);
+    const interval = parseInt(document.getElementById("interval").value || "1", 10);
+    if (pts > 0 && interval > 0) {
+      document.getElementById("score").innerText = Math.floor(elapsedSec / interval) * pts;
+    }
+    saveState();
+  }
+
+  function startTimer() {
+    if (running) return;
+    startTime = Date.now();
+    running = true;
+    document.getElementById("status").innerText = "กำลังนับ...";
+    timer = setInterval(updateElapsed, 1000);
+    saveState();
+  }
+
+  function pauseTimer() {
+    if (!running) return;
+    clearInterval(timer);
+    running = false;
+    const now = Date.now();
+    pausedTime += Math.floor((now - startTime) / 1000);
+    document.getElementById("status").innerText = "หยุดพัก";
+    saveState();
+  }
+
+  function resetTimer() {
+    clearInterval(timer);
+    running = false;
+    startTime = null;
+    pausedTime = 0;
+    document.getElementById("status").innerText = "รอเริ่ม...";
+    document.getElementById("elapsed").innerText = "0";
+    document.getElementById("score").innerText = "0";
+    saveState();
+  }
+
+  document.getElementById("startBtn").addEventListener("click", startTimer);
+  document.getElementById("pauseBtn").addEventListener("click", pauseTimer);
+  document.getElementById("resetBtn").addEventListener("click", resetTimer);
+
+  window.addEventListener("load", loadState);
+
+  document.querySelectorAll("input, select").forEach(el => {
+    el.addEventListener("input", saveState);
+    el.addEventListener("change", saveState);
+  });
+  </script>
+</body>
+</html>
