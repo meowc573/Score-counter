@@ -4,25 +4,26 @@
   <meta charset="UTF-8" />
   <title>เครื่องคำนวณคะแนนและเวลา</title>
   <style>
+    /* (เหมือนเดิม) */
     @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&display=swap');
 
     body {
       font-family: 'Sarabun', sans-serif;
-      background: linear-gradient(135deg, #4a90e2, #145dca);
+      background: linear-gradient(135deg, #5a4e7c, #3a2a52);
       color: #f0f0f0;
       padding: 30px;
       max-width: 480px;
       margin: 40px auto;
       border-radius: 20px;
-      box-shadow: 0 15px 40px rgba(20, 93, 202, 0.6);
+      box-shadow: 0 15px 40px rgba(58, 42, 82, 0.8);
     }
 
     h1 {
       text-align: center;
       margin-bottom: 30px;
       font-weight: 700;
-      color: #ffe680;
-      text-shadow: 0 0 10px #ffcc33aa;
+      color: #ffd860;
+      text-shadow: 0 0 15px #ffd860aa;
     }
 
     label {
@@ -45,7 +46,7 @@
     }
 
     input, select {
-      background: #ffffff22;
+      background: rgba(255 255 255 / 0.15);
       color: #fff;
       font-weight: 600;
     }
@@ -55,21 +56,21 @@
     }
 
     input:focus, select:focus {
-      box-shadow: 0 0 12px 3px #ffcc33cc;
-      background: #ffffff33;
+      box-shadow: 0 0 12px 3px #ffd860cc;
+      background: rgba(255 255 255 / 0.3);
     }
 
     button {
-      background: linear-gradient(90deg, #ffb347, #ffcc33);
-      color: #333;
+      background: linear-gradient(90deg, #ffb347, #ffd860);
+      color: #3a2a52;
       font-weight: 700;
       margin-top: 24px;
       cursor: pointer;
-      box-shadow: 0 6px 16px #ffcc33cc;
+      box-shadow: 0 6px 16px #ffd860cc;
     }
 
     button:hover {
-      background: linear-gradient(90deg, #ffcc33, #ffb347);
+      background: linear-gradient(90deg, #ffd860, #ffb347);
     }
 
     button:active {
@@ -77,11 +78,11 @@
     }
 
     .output {
-      background: #ffffff22;
+      background: rgba(255 255 255 / 0.15);
       padding: 22px 24px;
       border-radius: 18px;
       margin-top: 32px;
-      box-shadow: inset 0 0 14px #ffffff33;
+      box-shadow: inset 0 0 14px rgba(255 255 255 / 0.2);
     }
 
     .output p {
@@ -90,19 +91,19 @@
       font-weight: 600;
     }
 
-    #score {
+    #score, #calculatedScore2 {
       font-size: 26px;
       font-weight: 800;
-      color: #ffeb3b;
-      text-shadow: 0 0 10px #ffeb3baa;
+      color: #ffd860;
+      text-shadow: 0 0 10px #ffd860aa;
     }
 
     #status {
       font-style: italic;
-      color: #ffde59cc;
+      color: #ffeaa7cc;
     }
 
-    #elapsed, #timePassed, #timeRemaining {
+    #elapsed, #timeRemaining, #durationText2, #nowTime2, #chosenTime2 {
       font-weight: 700;
     }
 
@@ -120,15 +121,15 @@
     }
 
     hr {
-      border-color: #ffffff33;
+      border-color: rgba(255 255 255 / 0.2);
       margin: 60px 0;
     }
 
     #calculator2 {
-      background: #ffffff11;
+      background: rgba(255 255 255 / 0.1);
       padding: 34px;
       border-radius: 20px;
-      box-shadow: 0 10px 30px rgba(255, 204, 51, 0.3);
+      box-shadow: 0 10px 30px rgba(255 216 96 / 0.3);
     }
   </style>
 </head>
@@ -137,11 +138,11 @@
   <h1>เครื่องคำนวณเวลาจากคะแนน</h1>
 
   <label>คะแนน (Points)</label>
-  <input type="number" id="points" value="100" min="0" />
+  <input type="number" id="points" min="0" />
 
   <label>ทุกๆ (จำนวน) หน่วยเวลา</label>
   <div class="time-row">
-    <input type="number" id="timeAmount" value="10" min="1" />
+    <input type="number" id="timeAmount" min="1" />
     <select id="timeUnit">
       <option value="seconds">วินาที</option>
       <option value="minutes" selected>นาที</option>
@@ -163,7 +164,6 @@
     <p>สถานะ: <span id="status">รอเริ่ม...</span></p>
     <p>คะแนน: <span id="score">0</span></p>
     <p>เวลาที่ใช้ทั้งหมด: <span id="elapsed">-</span></p>
-    <p>เวลาที่ผ่านไป: <span id="timePassed">-</span></p>
     <p>เวลาที่เหลือ: <span id="timeRemaining">-</span></p>
   </div>
 
@@ -173,11 +173,11 @@
     <h1>เครื่องคำนวณคะแนนจากเวลา</h1>
 
     <label>คะแนนที่ได้รับต่อหน่วยเวลา</label>
-    <input type="number" id="points2" value="100" min="0" />
+    <input type="number" id="points2" min="0" />
 
     <label>ทุกๆ (จำนวน) หน่วยเวลา</label>
     <div class="time-row">
-      <input type="number" id="timeAmount2" value="10" min="1" />
+      <input type="number" id="timeAmount2" min="1" />
       <select id="timeUnit2">
         <option value="seconds">วินาที</option>
         <option value="minutes" selected>นาที</option>
@@ -200,8 +200,210 @@
   </div>
 
 <script>
-  // โค้ด JavaScript เหมือนเดิม (ถ้าต้องการให้ผมรวมให้ใหม่ บอกได้ครับ)
-  // แต่ถ้าต้องการ ผมทำให้ครบโค้ดเลยนะครับ
+  // ฟังก์ชันจัดการ Local Storage สำหรับฟิลด์ input, select
+  function saveToStorage(id) {
+    const elem = document.getElementById(id);
+    if (!elem) return;
+    elem.addEventListener('input', () => {
+      localStorage.setItem(id, elem.value);
+    });
+    if (elem.tagName === "SELECT") {
+      elem.addEventListener('change', () => {
+        localStorage.setItem(id, elem.value);
+      });
+    }
+  }
+
+  // โหลดค่าใส่ฟิลด์จาก LocalStorage (ถ้ามี)
+  function loadFromStorage(id, defaultValue = '') {
+    const val = localStorage.getItem(id);
+    const elem = document.getElementById(id);
+    if (elem) {
+      elem.value = val !== null ? val : defaultValue;
+    }
+  }
+
+  // โหลดค่าทั้งหมดจาก LocalStorage
+  function loadAll() {
+    loadFromStorage("points", "100");
+    loadFromStorage("timeAmount", "10");
+    loadFromStorage("timeUnit", "minutes");
+    loadFromStorage("targetScore", "");
+
+    loadFromStorage("points2", "100");
+    loadFromStorage("timeAmount2", "10");
+    loadFromStorage("timeUnit2", "minutes");
+    loadFromStorage("endTime2", "");
+  }
+
+  // เซ็ต event listener ทุกตัวที่ต้องการเก็บค่าลง Storage
+  function setupSave() {
+    ["points", "timeAmount", "timeUnit", "targetScore",
+     "points2", "timeAmount2", "timeUnit2", "endTime2"].forEach(id => saveToStorage(id));
+  }
+
+  // ฟังก์ชันแปลงเวลาเป็น ms จากหน่วยและจำนวน
+  function toMilliseconds(amount, unit) {
+    let ms = amount;
+    if (unit === "seconds") ms *= 1000;
+    else if (unit === "minutes") ms *= 60 * 1000;
+    else if (unit === "hours") ms *= 3600 * 1000;
+    else if (unit === "days") ms *= 86400 * 1000;
+    return ms;
+  }
+
+  // ฟังก์ชันแสดงเวลาแบบอ่านง่าย
+  function formatTime(ms) {
+    if (ms < 0) ms = 0;
+    const sec = Math.floor(ms / 1000);
+    const days = Math.floor(sec / 86400);
+    const hours = Math.floor((sec % 86400) / 3600);
+    const minutes = Math.floor((sec % 3600) / 60);
+    const seconds = sec % 60;
+    return `${days} วัน ${hours} ชม. ${minutes} นาที ${seconds} วิ`;
+  }
+
+  // ฟังก์ชันแสดงคะแนนแบบเลขทศนิยม 2 ตำแหน่ง ถ้ามี
+  function formatScore(score) {
+    return Number.isInteger(score) ? score.toString() : score.toFixed(2);
+  }
+
+  // ตัวแปรเก็บสถานะการนับคะแนน
+  let score = 0;
+  let startTime = null;
+  let pausedTime = 0;
+  let pauseStart = null;
+  let interval = null;
+  let isRunning = false;
+
+  // อัปเดตคะแนนและเวลาที่ใช้
+  function update() {
+    if (!isRunning) return;
+
+    const now = new Date();
+    let elapsedMs = now - startTime - pausedTime;
+    if (elapsedMs < 0) elapsedMs = 0;
+
+    const points = parseFloat(document.getElementById("points").value) || 0;
+    const timeAmount = parseFloat(document.getElementById("timeAmount").value) || 1;
+    const unit = document.getElementById("timeUnit").value;
+    const target = parseFloat(document.getElementById("targetScore").value);
+
+    const unitMs = toMilliseconds(timeAmount, unit);
+
+    const unitsPassed = Math.floor(elapsedMs / unitMs);
+    score = unitsPassed * points;
+
+    document.getElementById("score").textContent = formatScore(score);
+    document.getElementById("elapsed").textContent = formatTime(elapsedMs);
+
+    if (!isNaN(target) && target > 0 && points > 0) {
+      const totalTimeMs = unitMs * (target / points);
+      const remainingMs = totalTimeMs - elapsedMs;
+
+      document.getElementById("timeRemaining").textContent = remainingMs > 0 ? formatTime(remainingMs) : "ถึงเป้าหมายแล้ว";
+      if (remainingMs <= 0) {
+        document.getElementById("status").textContent = "ถึงเป้าหมายคะแนนแล้ว 🎉";
+        clearInterval(interval);
+        isRunning = false;
+        return;
+      } else {
+        document.getElementById("status").textContent = "กำลังนับคะแนน...";
+      }
+    } else {
+      document.getElementById("timeRemaining").textContent = "-";
+      document.getElementById("status").textContent = "กำลังนับคะแนน...";
+    }
+  }
+
+  function start() {
+    if (isRunning) return;
+    if (!startTime) startTime = new Date();
+    if (pauseStart) {
+      pausedTime += new Date() - pauseStart;
+      pauseStart = null;
+    }
+    isRunning = true;
+    document.getElementById("status").textContent = "กำลังนับคะแนน...";
+    interval = setInterval(update, 1000);
+  }
+
+  function pause() {
+    if (!isRunning) return;
+    isRunning = false;
+    pauseStart = new Date();
+    clearInterval(interval);
+    document.getElementById("status").textContent = "หยุดพัก...";
+  }
+
+  function reset() {
+    isRunning = false;
+    clearInterval(interval);
+    score = 0;
+    startTime = null;
+    pausedTime = 0;
+    pauseStart = null;
+    document.getElementById("score").textContent = "0";
+    document.getElementById("elapsed").textContent = "-";
+    document.getElementById("timeRemaining").textContent = "-";
+    document.getElementById("status").textContent = "รอเริ่ม...";
+  }
+
+  // ฟังก์ชันคำนวณคะแนนจากเวลาที่เลือก (หน้าต่าง 2) แบบเรียลไทม์ด้วย
+  function updateCalculator2() {
+    const points2 = parseFloat(document.getElementById("points2").value) || 0;
+    const timeAmount2 = parseFloat(document.getElementById("timeAmount2").value) || 1;
+    const unit2 = document.getElementById("timeUnit2").value;
+    const endTimeStr = document.getElementById("endTime2").value;
+
+    const now = new Date();
+    document.getElementById("nowTime2").textContent = now.toLocaleString('th-TH');
+
+    if (!endTimeStr) {
+      // เคลียร์ค่าออกถ้าไม่มีเวลาสิ้นสุด
+      document.getElementById("chosenTime2").textContent = "-";
+      document.getElementById("calculatedScore2").textContent = "-";
+      document.getElementById("durationText2").textContent = "-";
+      return;
+    }
+
+    const endTime = new Date(endTimeStr);
+
+    const durationMs = endTime - now;
+    if (durationMs < 0) {
+      document.getElementById("chosenTime2").textContent = endTime.toLocaleString('th-TH');
+      document.getElementById("calculatedScore2").textContent = "เวลาสิ้นสุดต้องมากกว่าเวลาปัจจุบัน";
+      document.getElementById("durationText2").textContent = "-";
+      return;
+    }
+
+    const unitMs2 = toMilliseconds(timeAmount2, unit2);
+    const unitsPassed2 = durationMs / unitMs2;
+    const score2 = unitsPassed2 * points2;
+
+    document.getElementById("chosenTime2").textContent = endTime.toLocaleString('th-TH');
+    document.getElementById("calculatedScore2").textContent = formatScore(score2);
+    document.getElementById("durationText2").textContent = formatTime(durationMs);
+  }
+
+  // ให้ปุ่มคำนวณแบบ manual ยังอยู่ (เรียก updateCalculator2)
+  function calculateScoreFromTime() {
+    updateCalculator2();
+  }
+
+  // ตั้ง interval อัปเดตหน้าต่าง 2 แบบเรียลไทม์ทุก 1 วินาที
+  let intervalCalc2 = null;
+  function startCalc2Realtime() {
+    if (intervalCalc2) clearInterval(intervalCalc2);
+    intervalCalc2 = setInterval(updateCalculator2, 1000);
+  }
+
+  // โหลดค่าเริ่มต้นและเซ็ต event listener เก็บค่า
+  window.onload = function() {
+    loadAll();
+    setupSave();
+    startCalc2Realtime();
+  }
 </script>
 
 </body>
