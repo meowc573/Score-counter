@@ -87,8 +87,7 @@
   }
 
   function formatScore(score) {
-    if (Number.isInteger(score)) return score.toString();
-    return score.toFixed(2);
+    return Number.isInteger(score) ? score.toString() : score.toFixed(2);
   }
 
   function calculateRate() {
@@ -102,26 +101,6 @@
     else if (unit === "days") seconds *= 86400;
 
     return points / seconds;
-  }
-
-  function saveState(state) {
-    localStorage.setItem("counterState", JSON.stringify(state));
-  }
-
-  function loadState() {
-    const data = localStorage.getItem("counterState");
-    if (data) {
-      try {
-        return JSON.parse(data);
-      } catch {
-        return null;
-      }
-    }
-    return null;
-  }
-
-  function clearState() {
-    localStorage.removeItem("counterState");
   }
 
   let score = 0;
@@ -141,71 +120,39 @@
 
     const unit = document.getElementById("timeUnit").value;
     const timeAmount = parseFloat(document.getElementById("timeAmount").value) || 1;
+    const points = parseFloat(document.getElementById("points").value) || 0;
+    const target = parseFloat(document.getElementById("targetScore").value);
 
     let unitSeconds = timeAmount;
     if (unit === "minutes") unitSeconds *= 60;
     else if (unit === "hours") unitSeconds *= 3600;
     else if (unit === "days") unitSeconds *= 86400;
 
-    // คำนวณจำนวนหน่วยเวลาที่ผ่านไปเต็มจำนวน
     const unitsPassed = Math.floor(elapsedMs / 1000 / unitSeconds);
-
-    const points = parseFloat(document.getElementById("points").value) || 0;
     score = unitsPassed * points;
-
     document.getElementById("score").textContent = formatScore(score);
 
-    const target = parseFloat(document.getElementById("targetScore").value);
-    if (!isNaN(target) && target > 0) {
-      const remainingPoints = target - score;
-      if (remainingPoints <= 0) {
+    document.getElementById("timePassed").textContent = formatTime(elapsedMs);
+    document.getElementById("status").textContent = "กำลังนับคะแนน...";
+
+    if (!isNaN(target) && target > 0 && points > 0) {
+      const totalUnitsNeeded = Math.ceil(target / points);
+      const totalElapsedMs = totalUnitsNeeded * unitSeconds * 1000;
+      const remainingMs = totalElapsedMs - elapsedMs;
+
+      document.getElementById("elapsed").textContent = formatTime(totalElapsedMs);
+      document.getElementById("timeRemaining").textContent = formatTime(remainingMs);
+
+      if (score >= target) {
         clearInterval(interval);
-        interval = null;
         isRunning = false;
         document.getElementById("status").textContent = "ถึงเป้าหมายแล้ว!";
         document.getElementById("timeRemaining").textContent = "0 วัน 0 ชม. 0 นาที 0 วิ";
-        document.getElementById("timePassed").textContent = formatTime(elapsedMs);
-
-        const totalUnitsNeeded = Math.ceil(target / points);
-        const totalElapsedMs = totalUnitsNeeded * unitSeconds * 1000;
-        document.getElementById("elapsed").textContent = formatTime(totalElapsedMs);
-
-        return;
       }
-
-      const remainingSeconds = Math.ceil(remainingPoints / ratePerSecond);
-      document.getElementById("timeRemaining").textContent = formatTime(remainingSeconds * 1000);
-
-      document.getElementById("timePassed").textContent = formatTime(elapsedMs);
-
-      const totalUnitsNeeded = Math.ceil(target / points);
-      const totalElapsedMs = totalUnitsNeeded * unitSeconds * 1000;
-      document.getElementById("elapsed").textContent = formatTime(totalElapsedMs);
-
     } else {
-      document.getElementById("timeRemaining").textContent = "-";
-      document.getElementById("timePassed").textContent = formatTime(elapsedMs);
       document.getElementById("elapsed").textContent = "-";
+      document.getElementById("timeRemaining").textContent = "-";
     }
-
-    document.getElementById("status").textContent = "กำลังนับคะแนน...";
-
-    saveState({
-      startTime: startTime.getTime(),
-      pausedTime,
-      pauseStart: pauseStart ? pauseStart.getTime() : null,
-      score,
-      ratePerSecond,
-      isRunning,
-      targetScore: target || null,
-      points: document.getElementById("points").value,
-      timeAmount: document.getElementById("timeAmount").value,
-      timeUnit: document.getElementById("timeUnit").value
-    });
-  }
-
-  function saveElapsedTime(seconds) {
-    document.getElementById("elapsed").textContent = seconds;
   }
 
   function start() {
@@ -215,6 +162,32 @@
     if (ratePerSecond <= 0) {
       alert("กรุณาใส่คะแนนและหน่วยเวลาที่ถูกต้อง");
       return;
+    }
+
+    const points = parseFloat(document.getElementById("points").value) || 0;
+    const timeAmount = parseFloat(document.getElementById("timeAmount").value) || 1;
+    const unit = document.getElementById("timeUnit").value;
+    const target = parseFloat(document.getElementById("targetScore").value);
+
+    let unitSeconds = timeAmount;
+    if (unit === "minutes") unitSeconds *= 60;
+    else if (unit === "hours") unitSeconds *= 3600;
+    else if (unit === "days") unitSeconds *= 86400;
+
+    score = 0;
+    document.getElementById("score").textContent = "0";
+    document.getElementById("status").textContent = "กำลังนับคะแนน...";
+    document.getElementById("timePassed").textContent = formatTime(0);
+
+    if (!isNaN(target) && target > 0 && points > 0) {
+      const totalUnitsNeeded = Math.ceil(target / points);
+      const totalElapsedMs = totalUnitsNeeded * unitSeconds * 1000;
+
+      document.getElementById("elapsed").textContent = formatTime(totalElapsedMs);
+      document.getElementById("timeRemaining").textContent = formatTime(totalElapsedMs);
+    } else {
+      document.getElementById("elapsed").textContent = "-";
+      document.getElementById("timeRemaining").textContent = "-";
     }
 
     if (!startTime) {
@@ -227,7 +200,6 @@
     }
 
     isRunning = true;
-
     if (interval) clearInterval(interval);
     interval = setInterval(update, 1000);
     update();
@@ -235,73 +207,25 @@
 
   function pause() {
     if (!isRunning) return;
-
     clearInterval(interval);
-    interval = null;
     pauseStart = new Date();
     isRunning = false;
-
-    const elapsedSec = Math.floor((pauseStart - startTime - pausedTime) / 1000);
-
     document.getElementById("status").textContent = "หยุดชั่วคราว";
-
-    saveState({
-      startTime: startTime.getTime(),
-      pausedTime,
-      pauseStart: pauseStart.getTime(),
-      score,
-      ratePerSecond,
-      isRunning,
-      targetScore: parseFloat(document.getElementById("targetScore").value) || null,
-      points: document.getElementById("points").value,
-      timeAmount: document.getElementById("timeAmount").value,
-      timeUnit: document.getElementById("timeUnit").value
-    });
   }
 
   function reset() {
     clearInterval(interval);
-    interval = null;
     score = 0;
     startTime = null;
     pausedTime = 0;
     pauseStart = null;
     isRunning = false;
-
     document.getElementById("score").textContent = "0";
     document.getElementById("elapsed").textContent = "-";
     document.getElementById("timePassed").textContent = "-";
     document.getElementById("timeRemaining").textContent = "-";
     document.getElementById("status").textContent = "รอเริ่ม...";
-
-    clearState();
   }
-
-  window.onload = function() {
-    const state = loadState();
-    if (state) {
-      startTime = new Date(state.startTime);
-      pausedTime = state.pausedTime;
-      pauseStart = state.pauseStart ? new Date(state.pauseStart) : null;
-      score = state.score || 0;
-      ratePerSecond = state.ratePerSecond || 0;
-      isRunning = state.isRunning;
-
-      document.getElementById("points").value = state.points || 100;
-      document.getElementById("timeAmount").value = state.timeAmount || 10;
-      document.getElementById("timeUnit").value = state.timeUnit || "minutes";
-      document.getElementById("targetScore").value = state.targetScore || "";
-
-      document.getElementById("score").textContent = formatScore(score);
-      document.getElementById("elapsed").textContent = "-";
-      document.getElementById("status").textContent = isRunning ? "กำลังนับคะแนน..." : "หยุดชั่วคราว";
-
-      if (isRunning) {
-        if (interval) clearInterval(interval);
-        interval = setInterval(update, 1000);
-      }
-    }
-  };
 </script>
 
 </body>
